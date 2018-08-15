@@ -1,0 +1,42 @@
+#!/bin/bash
+
+SSHD_CONFIG=/etc/ssh/sshd_config
+
+if [ ! -z "$HOST_NAME" ]; then
+  echo "$HOST_NAME" > /etc/hostname
+  sed -i "s/$(cat /etc/hostname)/$HOST_NAME/g" /etc/hosts
+fi
+
+echo -e "hostname: \e[96m$(hostname)\e[0m]"
+
+sed -i "s/#\?MaxAuthTries [0-9]\+/MaxAuthTries 3/g" $SSHD_CONFIG
+sed -i "s/#\?PrintMotd \(yes\|no\)/PrintMotd no/g" $SSHD_CONFIG
+sed -i "s/#\?PrintLastLog \(yes\|no\)/PrintLastLog no/g" $SSHD_CONFIG
+sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
+
+if [ ! -z "$SSH_PORT" ]; then
+  sed -i "s/#\?Port [0-9]\+/Port $SSH_PORT/g" $SSHD_CONFIG
+  echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
+fi
+
+if [ ! -z "$SSH_KEY" ]; then
+
+  mkdir -p /root/.ssh
+  echo "$SSH_KEY" >> /root/.ssh/authorized_keys
+  sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication yes/g" $SSHD_CONFIG
+  sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication no/g" $SSHD_CONFIG
+  sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin prohibit-password/g" $SSHD_CONFIG
+  echo -e "use sshkey: \e[93m$SSH_KEY\e[0m"
+
+else
+
+  [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`date +%s | sha256sum | base64 | head -c 32 ; echo`
+  echo "root:$SSH_PASSWD" | chpasswd
+  echo -e "\e[96mpassword\e[0m: \e[1m$SSH_PASSWD\e[0m"
+
+  sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication no/g" $SSHD_CONFIG
+  sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication yes/g" $SSHD_CONFIG
+  sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin yes/g" $SSHD_CONFIG
+fi
+
+exec "$@"
