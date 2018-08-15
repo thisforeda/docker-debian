@@ -9,26 +9,21 @@ RUN apt-get update \
       vim \
       screen \
       git \
-      htop \
       curl \
-      rsync \
-      psmisc \
       zip \
       unzip \
-      netcat \
-      libtool \
-      dnsutils \
-      inetutils-telnet \
       virtualenv \
       gcc \
-      g++ \
-      gcc \
-      python3 \
-      python3-dev \
+      python-pip \
       python3-pip \
+      python-dev \
+      python3-dev \
+      python-wheel \
       python3-wheel \
+      python-setuptools \
       python3-setuptools \
     && ln -sf /usr/bin/pip3 /usr/bin/pip \
+    && ln -sf /usr/bin/python3 /usr/bin/py \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && mkdir /var/run/sshd \
     && mkdir /root/.ssh \
