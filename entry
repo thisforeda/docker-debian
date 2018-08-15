@@ -2,12 +2,7 @@
 
 SSHD_CONFIG=/etc/ssh/sshd_config
 
-if [ ! -z "$HOST_NAME" ]; then
-  echo "$HOST_NAME" > /etc/hostname
-  sed -i "s/$(cat /etc/hostname)/$HOST_NAME/g" /etc/hosts
-fi
-
-echo -e "hostname: \e[96m$(hostname)\e[0m]"
+echo -e "hostname: \e[96m$(hostname)\e[0m"
 
 sed -i "s/#\?MaxAuthTries [0-9]\+/MaxAuthTries 3/g" $SSHD_CONFIG
 sed -i "s/#\?PrintMotd \(yes\|no\)/PrintMotd no/g" $SSHD_CONFIG
