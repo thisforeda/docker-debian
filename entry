@@ -4,34 +4,35 @@ SSHD_CONFIG=/etc/ssh/sshd_config
 
 echo -e "hostname: \e[96m$(hostname)\e[0m"
 
-sed -i "s/#\?MaxAuthTries [0-9]\+/MaxAuthTries 3/g" $SSHD_CONFIG
-sed -i "s/#\?PrintMotd \(yes\|no\)/PrintMotd no/g" $SSHD_CONFIG
-sed -i "s/#\?PrintLastLog \(yes\|no\)/PrintLastLog no/g" $SSHD_CONFIG
-sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
-
-if [ ! -z "$SSH_PORT" ]; then
-  sed -i "s/#\?Port [0-9]\+/Port $SSH_PORT/g" $SSHD_CONFIG
-  echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
-fi
-
 if [ ! -z "$SSH_KEY" ]; then
 
   mkdir -p /root/.ssh
   echo "$SSH_KEY" >> /root/.ssh/authorized_keys
-  sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication yes/g" $SSHD_CONFIG
-  sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication no/g" $SSHD_CONFIG
-  sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin prohibit-password/g" $SSHD_CONFIG
   echo -e "use sshkey: \e[93m$SSH_KEY\e[0m"
-
+ 
+  PUB_KEY_AUTH=yes
+  PASSWD_AUTH=no
+  PERMIT_ROOT_LOG=prohibit-password
 else
 
   [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   echo "root:$SSH_PASSWD" | chpasswd
   echo -e "\e[96mpassword\e[0m: \e[1m$SSH_PASSWD\e[0m"
 
-  sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication no/g" $SSHD_CONFIG
-  sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication yes/g" $SSHD_CONFIG
-  sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin yes/g" $SSHD_CONFIG
+  PUB_KEY_AUTH=no
+  PASSWD_AUTH=yes
+  PERMIT_ROOT_LOG=yes
 fi
+
+if [ ! -z "$SSH_PORT" ]; then
+  sed -i "s/#\?Port [0-9]\+/Port $SSH_PORT/g" $SSHD_CONFIG
+  echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
+fi
+
+sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
+sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUB_KEY_AUTH/g" $SSHD_CONFIG
+sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication $PASSWD_AUTH/g" $SSHD_CONFIG
+sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin $PERMIT_ROOT_LOG/g" $SSHD_CONFIG
+
 
 exec "$@"
