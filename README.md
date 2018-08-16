@@ -13,3 +13,7 @@ docker run -e SSH_PORT=1233 --network=host docker-with-sshd
 # use your own ssh key
 docker run -e SSH_KEY="YOUR_SSH_KEY" -e SSH_PORT=1233 --network=host docker-with-sshd
 ```
+
+# NOTICE
+
+Don't put any important data to the container **anywhere**, except a volumn mounted from host machine.
