@@ -40,10 +40,10 @@ if [ ! -z "$SSH_PORT" ]; then
   echo -e "PORT \e[96m$SSH_PORT\e[0m"
 fi
 
-if [ ! -z "$SSH_LISTEN" ]; then
-  sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $SSH_LISTEN/g" $SSHD_CONFIG
-  echo -e "LISTEN \e[96m$SSH_LISTEN\e[0m"
-fi
+[[ -z "$SSH_LISTEN" ]] && SSH_LISTEN=127.0.0.1
+
+sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $SSH_LISTEN/g" $SSHD_CONFIG
+echo -e "LISTEN \e[96m$SSH_LISTEN\e[0m"
 
 sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
 sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUB_KEY_AUTH/g" $SSHD_CONFIG
