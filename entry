@@ -7,7 +7,7 @@ echo -e "hostname: \e[96m$(hostname)\e[0m"
 if [ ! -z "$SSH_USER" ]; then
 
   useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER && usermod -aG sudo "$SSH_USER"
-  echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+  echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
   HOME=/home/$SSH_USER
 else
 
