@@ -4,11 +4,20 @@ SSHD_CONFIG=/etc/ssh/sshd_config
 
 echo -e "hostname: \e[96m$(hostname)\e[0m"
 
+if [ ! -z "$SSH_USER" ]; then
+  useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER
+  HOME=/home/$SSH_USER
+else
+
+  SSH_USER=root
+  HOME=/root
+fi
+
 if [ ! -z "$SSH_KEY" ]; then
 
-  mkdir -p /root/.ssh
-  echo "$SSH_KEY" >> /root/.ssh/authorized_keys
-  echo -e "use sshkey: \e[93m$SSH_KEY\e[0m"
+  mkdir -p $HOME/.ssh
+  echo "$SSH_KEY" >> $HOME/.ssh/authorized_keys
+  echo -e "USE SSHKEY FOR $USER: \e[93m$SSH_KEY\e[0m"
  
   PUB_KEY_AUTH=yes
   PASSWD_AUTH=no
@@ -16,8 +25,8 @@ if [ ! -z "$SSH_KEY" ]; then
 else
 
   [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`date +%s | sha256sum | base64 | head -c 32 ; echo`
-  echo "root:$SSH_PASSWD" | chpasswd
-  echo -e "\e[96mpassword\e[0m: \e[1m$SSH_PASSWD\e[0m"
+  echo "$SSH_USER:$SSH_PASSWD" | chpasswd
+  echo -e "\e[96mPASSWD FOR $USER\e[0m: \e[1m$SSH_PASSWD\e[0m"
 
   PUB_KEY_AUTH=no
   PASSWD_AUTH=yes
@@ -26,12 +35,12 @@ fi
 
 if [ ! -z "$SSH_PORT" ]; then
   sed -i "s/#\?Port [0-9]\+/Port $SSH_PORT/g" $SSHD_CONFIG
-  echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
+  echo -e "PORT \e[96m$SSH_PORT\e[0m"
 fi
 
 if [ ! -z "$SSH_LISTEN" ]; then
   sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $SSH_LISTEN/g" $SSHD_CONFIG
-  echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
+  echo -e "LISTEN \e[96m$SSH_LISTEN\e[0m"
 fi
 
 sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
