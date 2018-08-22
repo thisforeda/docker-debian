@@ -29,6 +29,11 @@ if [ ! -z "$SSH_PORT" ]; then
   echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
 fi
 
+if [ ! -z "$SSH_LISTEN" ]; then
+  sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $SSH_LISTEN/g" $SSHD_CONFIG
+  echo -e "bind sshd to \e[96m$SSH_PORT\e[0m"
+fi
+
 sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
 sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUB_KEY_AUTH/g" $SSHD_CONFIG
 sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication $PASSWD_AUTH/g" $SSHD_CONFIG
