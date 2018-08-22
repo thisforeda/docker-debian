@@ -19,7 +19,7 @@ if [ ! -z "$SSH_KEY" ]; then
 
   mkdir -p $HOME/.ssh
   echo "$SSH_KEY" >> $HOME/.ssh/authorized_keys
-  echo -e "USE SSHKEY FOR $USER: \e[93m$SSH_KEY\e[0m"
+  echo -e "USE SSHKEY FOR $SSH_USER: \e[93m$SSH_KEY\e[0m"
  
   PUB_KEY_AUTH=yes
   PASSWD_AUTH=no
@@ -28,7 +28,7 @@ else
 
   [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   echo "$SSH_USER:$SSH_PASSWD" | chpasswd
-  echo -e "\e[96mPASSWD FOR $USER\e[0m: \e[1m$SSH_PASSWD\e[0m"
+  echo -e "\e[96mPASSWD FOR $SSH_USER\e[0m: \e[1m$SSH_PASSWD\e[0m"
 
   PUB_KEY_AUTH=no
   PASSWD_AUTH=yes
