@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt install -y --no-install-recommends \
       supervisor \
       openssh-server \
+      sudo \
       rsync \
       vim \
       screen \
