@@ -26,7 +26,7 @@ if [ ! -z "$SSH_KEY" ]; then
   PERMIT_ROOT_LOG=prohibit-password
 else
 
-  [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`date +%s | sha256sum | base64 | head -c 32 ; echo`
+  [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`cat /dev/urandom | head -c 36 | sha256sum | base64 | head -c 32 ; echo`
   echo "$SSH_USER:$SSH_PASSWD" | chpasswd
   echo -e "\e[96mPASSWD FOR $SSH_USER\e[0m: \e[1m$SSH_PASSWD\e[0m"
 
