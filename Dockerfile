@@ -4,6 +4,7 @@ COPY entry /entry
 
 RUN apt-get update \
     && apt install -y --no-install-recommends \
+      cron \
       supervisor \
       openssh-server \
       sudo \
