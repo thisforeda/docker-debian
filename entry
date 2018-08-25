@@ -2,53 +2,30 @@
 
 SSHD_CONFIG=/etc/ssh/sshd_config
 
-echo -e "hostname: \e[96m$(hostname)\e[0m"
+HOME=/root
+PORT=${PORT:-22}
+LISTEN_ADDRESS=${LISTEN_ADDRESS:-127.0.0.1}
 
-if [ ! -z "$SSH_USER" ]; then
+SSH_USER=${SSH_USER:-root}
+SSH_PASSWD=${SSH_PASSWD:-np}
 
-  useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER && usermod -aG sudo "$SSH_USER"
-  echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-  HOME=/home/$SSH_USER
-else
+[ "$SSH_PASSWD" != "np" ]   && echo "$SSH_USER:$SSH_PASSWD" | chpasswd
 
-  SSH_USER=root
-  HOME=/root
-fi
+[ "$SSH_USER" != "root" ]   && HOME=/home/$SSH_USER \
+                            && useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER \
+                            && usermod -aG sudo "$SSH_USER" \
+                            && echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 
-if [ ! -z "$SSH_KEY" ]; then
+[ ! -z "$SSH_KEY" ]         && mkdir -p $HOME/.ssh \
+                            && echo "$SSH_KEY" | tee $HOME/.ssh/authorized_keys \
+                            && chmod 600 $HOME/.ssh/authorized_keys
 
-  mkdir -p $HOME/.ssh
-  echo "$SSH_KEY" >> $HOME/.ssh/authorized_keys
-  echo -e "USE SSHKEY FOR $SSH_USER: \e[93m$SSH_KEY\e[0m"
- 
-  PUB_KEY_AUTH=yes
-  PASSWD_AUTH=no
-  PERMIT_ROOT_LOG=prohibit-password
-else
 
-  [[ -z "$SSH_PASSWD" ]] && SSH_PASSWD=`cat /dev/urandom | head -c 36 | sha256sum | base64 | head -c 32 ; echo`
-  echo "$SSH_USER:$SSH_PASSWD" | chpasswd
-  echo -e "\e[96mPASSWD FOR $SSH_USER\e[0m: \e[1m$SSH_PASSWD\e[0m"
-
-  PUB_KEY_AUTH=no
-  PASSWD_AUTH=yes
-  PERMIT_ROOT_LOG=yes
-fi
-
-if [ ! -z "$SSH_PORT" ]; then
-  sed -i "s/#\?Port [0-9]\+/Port $SSH_PORT/g" $SSHD_CONFIG
-  echo -e "PORT \e[96m$SSH_PORT\e[0m"
-fi
-
-[[ -z "$SSH_LISTEN" ]] && SSH_LISTEN=127.0.0.1
-
-sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $SSH_LISTEN/g" $SSHD_CONFIG
-echo -e "LISTEN \e[96m$SSH_LISTEN\e[0m"
-
-sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords no/g" $SSHD_CONFIG
-sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUB_KEY_AUTH/g" $SSHD_CONFIG
-sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication $PASSWD_AUTH/g" $SSHD_CONFIG
-sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin $PERMIT_ROOT_LOG/g" $SSHD_CONFIG
-
+sed -i "s/#\?Port [0-9]\+/Port $PORT/g" $SSHD_CONFIG
+sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $LISTEN_ADDRESS/g" $SSHD_CONFIG
+sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUBKEY_AUTHENTICATION/g" $SSHD_CONFIG
+sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication $PASSWD_AUTHENTICATION/g" $SSHD_CONFIG
+sed -i "s/#\?PermitEmptyPasswords \(yes\|no\)/PermitEmptyPasswords $PERMIT_EMPTY_PASSWD/g" $SSHD_CONFIG
+sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin $PERMIT_ROOT_LOGIN/g" $SSHD_CONFIG
 
 exec "$@"
