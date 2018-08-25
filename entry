@@ -8,15 +8,16 @@ SSH_PASSWD=${SSH_PASSWD:-`cat /dev/urandom | head -c 36 | sha256sum | base64 | h
 
 PORT=${PORT:-22}
 LISTEN_ADDRESS=${LISTEN_ADDRESS:-127.0.0.1}
-
+PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
 
 [ "$SSH_USER" != "root" ]   && HOME=/home/$SSH_USER \
+                            && PERMIT_ROOT_LOGIN=no \
                             && useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER \
                             && usermod -aG sudo "$SSH_USER" \
                             && echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 
 echo "$SSH_USER:$SSH_PASSWD" | chpasswd \
-                            && echo -e "\e[96m$SSH_USER\e[0m:\e[1m$SSH_PASSWD\e[0m"
+     && echo -e "\e[96m$SSH_USER\e[0m:\e[1m$SSH_PASSWD\e[0m"
 
 sed -i "s/#\?Port [0-9]\+/Port $PORT/g" $SSHD_CONFIG
 sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $LISTEN_ADDRESS/g" $SSHD_CONFIG
