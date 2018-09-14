@@ -15,8 +15,7 @@ PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
 [ "$SSH_USER" != "root" ]   && HOME=/home/$SSH_USER \
                             && PERMIT_ROOT_LOGIN=no \
                             && useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER \
-                            && usermod -aG sudo "$SSH_USER" \
-                            && echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+                            && usermod -aG sudo "$SSH_USER"
 
 [ ! -z "$SSH_KEY" ]         && PASSWD_AUTH=no \
                             && mkdir -p $HOME/.ssh \
