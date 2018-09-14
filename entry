@@ -23,7 +23,7 @@ PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
                             && echo "$SSH_KEY" >> $HOME/.ssh/authorized_keys \
                             && chown $SSH_USER: $HOME/.ssh/authorized_keys \
                             && chmod 600 $HOME/.ssh/authorized_keys \
-                            && echo -e "SSH_KEY_AUTH \e[96m$SSH_USER\e[0m:\e[1m$SSH_KEY\e[0m"
+                            && echo -e "SSHKEY_AUTH \e[96m$SSH_USER\e[0m:\e[1m$SSH_KEY\e[0m"
 
 echo "$SSH_USER:$SSH_PASSWD" | chpasswd \
      && echo -e "PASSWD_AUTH \e[96m$SSH_USER\e[0m:\e[1m$SSH_PASSWD\e[0m"
