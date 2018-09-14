@@ -8,6 +8,8 @@ SSH_PASSWD=${SSH_PASSWD:-`cat /dev/urandom | head -c 36 | sha256sum | base64 | h
 
 PORT=${PORT:-22}
 LISTEN_ADDRESS=${LISTEN_ADDRESS:-127.0.0.1}
+PASSWD_AUTH=${PASSWD_AUTH:-yes}
+PUB_KEY_AUTH=${PUB_KEY_AUTH:-yes}
 PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
 
 [ "$SSH_USER" != "root" ]   && HOME=/home/$SSH_USER \
@@ -16,11 +18,20 @@ PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
                             && usermod -aG sudo "$SSH_USER" \
                             && echo "$SSH_USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 
+[ ! -z "$SSH_KEY" ]         && PASSWD_AUTH=no \
+                            && mkdir -p $HOME/.ssh \
+                            && echo "$SSH_KEY" >> $HOME/.ssh/authorized_keys \
+                            && chown $SSH_USER: $HOME/.ssh/authorized_keys \
+                            && chmod 600 $HOME/.ssh/authorized_keys \
+                            && echo -e "SSH_KEY_AUTH \e[96m$SSH_USER\e[0m:\e[1m$SSH_KEY\e[0m"
+
 echo "$SSH_USER:$SSH_PASSWD" | chpasswd \
-     && echo -e "\e[96m$SSH_USER\e[0m:\e[1m$SSH_PASSWD\e[0m"
+     && echo -e "PASSWD_AUTH \e[96m$SSH_USER\e[0m:\e[1m$SSH_PASSWD\e[0m"
 
 sed -i "s/#\?Port [0-9]\+/Port $PORT/g" $SSHD_CONFIG
 sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $LISTEN_ADDRESS/g" $SSHD_CONFIG
+sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUB_KEY_AUTH/g" $SSHD_CONFIG
+sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication $PASSWD_AUTH/g" $SSHD_CONFIG
 sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin $PERMIT_ROOT_LOGIN/g" $SSHD_CONFIG
 
 exec "$@"
