@@ -17,6 +17,7 @@ RUN apt-get update \
       unzip \
       virtualenv \
       gcc \
+      netcat \
       python-pip \
       python3-pip \
       python-dev \
@@ -25,9 +26,7 @@ RUN apt-get update \
       python3-wheel \
       python-setuptools \
       python3-setuptools \
-    && ln -sf /usr/bin/pip3 /usr/bin/pip \
-    && ln -sf /usr/bin/python3 /usr/bin/py \
-    && ln -sf /usr/bin/python3 /usr/bin/python \
+    && [ -e /usr/bin/python ] || ln -sf /usr/bin/python2 /usr/bin/python \
     && mkdir /var/run/sshd \
     && mkdir /root/.ssh \
     && yes | apt-get clean \
