@@ -15,5 +15,6 @@ docker run -e SSH_KEY="YOUR_SSH_KEY" -e SSH_PORT=1233 --network=host docker-with
 ```
 
 # NOTICE
+If use `SSH_KEY`, then password authentication will be disabled!
 
 Don't put any important data to the container **anywhere**, except a volumn mounted from host machine.
