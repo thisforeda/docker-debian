@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SSHD_CONFIG=/etc/ssh/sshd_config
 
 HOME=/root
@@ -11,10 +10,12 @@ LISTEN_ADDRESS=${LISTEN_ADDRESS:-127.0.0.1}
 PASSWD_AUTH=${PASSWD_AUTH:-yes}
 PUB_KEY_AUTH=${PUB_KEY_AUTH:-yes}
 PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
+ALLOW_USER_SUDO=${ALLOW_USER_SUDO:-yes}
 
 [ "$SSH_USER" != "root" ]   && HOME=/home/$SSH_USER \
                             && PERMIT_ROOT_LOGIN=no \
                             && useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER \
+                            && [ "$ALLOW_USER_SUDO" = "yes" ] \
                             && usermod -aG sudo "$SSH_USER"
 
 [ ! -z "$SSH_KEY" ]         && PASSWD_AUTH=no \

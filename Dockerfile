@@ -3,6 +3,7 @@ FROM debian:stretch-slim
 COPY entry /entry
 
 RUN apt-get update \
+    && apt-get -y upgrade \
     && apt install -y --no-install-recommends \
       cron \
       supervisor \
