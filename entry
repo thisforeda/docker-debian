@@ -1,9 +1,13 @@
 #!/bin/bash
+function create_passwd() {
+    cat /dev/urandom | head -c 36 | sha256sum | base64 | head -c 15
+}
+
 SSHD_CONFIG=/etc/ssh/sshd_config
 
 HOME=/root
 SSH_USER=${SSH_USER:-root}
-SSH_PASSWD=${SSH_PASSWD:-`cat /dev/urandom | head -c 36 | sha256sum | base64 | head -c 32 ; echo`}
+SSH_PASSWD=${SSH_PASSWD:-`create_passwd`}
 
 PORT=${PORT:-22}
 LISTEN_ADDRESS=${LISTEN_ADDRESS:-127.0.0.1}
@@ -11,7 +15,11 @@ PASSWD_AUTH=${PASSWD_AUTH:-yes}
 PUB_KEY_AUTH=${PUB_KEY_AUTH:-yes}
 PERMIT_ROOT_LOGIN=${PERMIT_ROOT_LOGIN:-yes}
 ALLOW_USER_SUDO=${ALLOW_USER_SUDO:-no}
+SSHD_LOG_LEVEL=${SSH_LOG_LEVEL:-VERBOSE}
+SSHD_PARAMS=${SSHD_PARAMS}
 
+
+echo "root:$(create_passwd)" | chpasswd
 [ "$SSH_USER" != "root" ]   && HOME=/home/$SSH_USER \
                             && PERMIT_ROOT_LOGIN=no \
                             && useradd $SSH_USER -s "/bin/bash" -m -d /home/$SSH_USER \
@@ -33,5 +41,6 @@ sed -i "s/#\?ListenAddress [0-9\.]\+/ListenAddress $LISTEN_ADDRESS/g" $SSHD_CONF
 sed -i "s/#\?PubkeyAuthentication \(yes\|no\)/PubkeyAuthentication $PUB_KEY_AUTH/g" $SSHD_CONFIG
 sed -i "s/#\?PasswordAuthentication \(yes\|no\)/PasswordAuthentication $PASSWD_AUTH/g" $SSHD_CONFIG
 sed -i "s/#\?PermitRootLogin \(yes\|no\|prohibit-password\)/PermitRootLogin $PERMIT_ROOT_LOGIN/g" $SSHD_CONFIG
+sed -i "s/#\?LogLevel \(INFO\|VERBOSE\)/LogLevel $SSHD_LOG_LEVEL/g" $SSHD_CONFIG
 
-exec "$@"
+exec $@ $SSHD_PARAMS

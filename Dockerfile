@@ -10,6 +10,7 @@ RUN apt-get update \
       openssh-server \
       sudo \
       rsync \
+      rsyslog \
       vim \
       screen \
       git \
@@ -34,7 +35,8 @@ RUN apt-get update \
     && yes | apt-get autoclean \
     && yes | apt-get autoremove \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && chmod +x /entry
+    && chown root:root /entry \
+    && chmod 755 /entry
 
 EXPOSE 22
 
