@@ -1,0 +1,16 @@
+FROM alpine:latest
+
+COPY entry /entry
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk add openssh-server rsync bash \
+    && ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N "" \
+    && ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N "" \
+    && chown root:root /entry \
+    && chmod 755 /entry
+
+EXPOSE 22
+
+ENTRYPOINT ["/entry"]
+
+CMD ["/usr/sbin/sshd", "-D"]
